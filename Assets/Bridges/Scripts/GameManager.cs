@@ -84,28 +84,39 @@ public class GameManager : MonoBehaviour
                 canCreateObstacle = false;
                 lastObstacle.GetComponent<Obstacle>().StopMoving();
 
-                //if stopped obstacle position is over previous then trigger game over
-                if (lastObstacle.transform.position.y - (.05f * obstacleHeight) > obstacleList[obstacleIndex - 1].transform.position.y)
+                var obstaclePos = lastObstacle.transform.position.y;
+                var previousObstaclePos = obstacleList[obstacleIndex - 1].transform.position.y;
+                var bridgeEndPos = bridgeEnd.transform.position.y;
+
+                //perfect stop (player can stop little higher or lower -> 5% of block high)
+                if (obstaclePos - (.05f * obstacleHeight) < previousObstaclePos &&
+                    obstaclePos + (.05f * obstacleHeight) > previousObstaclePos)
+                {
+                    lastObstacle.transform.position = new Vector2(lastObstacle.transform.position.x, obstacleList[obstacleIndex - 1].transform.position.y);
+                    AudioManager.Instance.PlayEffects(AudioManager.Instance.perfect);
+                    ScoreManager.Instance.UpdateScore(2);
+                }
+                //Check if lowest point of current obstacle is higher than highest point of previous obstacle
+                //or if highest point of current obstacle is lower than lowest point of previous obstacle
+                else if (obstaclePos - (obstacleHeight / 2) > previousObstaclePos + (obstacleHeight / 2) ||
+                         obstaclePos + (obstacleHeight / 2) < previousObstaclePos - (obstacleHeight / 2))
                 {
                     AudioManager.Instance.PlayEffects(AudioManager.Instance.wrongColor);
                     playing = false;
                     GameOver();
                     return;
                 }
-                else if (lastObstacle.transform.position.y - (.05f * obstacleHeight) < obstacleList[obstacleIndex - 1].transform.position.y && lastObstacle.transform.position.y + (.05f * obstacleHeight) > obstacleList[obstacleIndex - 1].transform.position.y) //perfect stop (player can stop little higher or lower -> 5% of block heigh)
-                {
-                    lastObstacle.transform.position = new Vector2(lastObstacle.transform.position.x, obstacleList[obstacleIndex - 1].transform.position.y);
-                    AudioManager.Instance.PlayEffects(AudioManager.Instance.perfect);
-                    ScoreManager.Instance.UpdateScore(2);
-                }
-                else //block is lower than previous
+                //everything is fine
+                else
                 {
                     AudioManager.Instance.PlayEffects(AudioManager.Instance.sameColor);
                     ScoreManager.Instance.UpdateScore(1);
                 }
-
+                
                 //finished bridge
-                if (obstacleIndex == bridgeLength && lastObstacle.transform.position.y >= bridgeEnd.transform.position.y)
+                if (obstacleIndex == bridgeLength &&
+                    obstaclePos - (obstacleHeight / 2) < bridgeEndPos + (obstacleHeight / 2) &&
+                    obstaclePos + (obstacleHeight / 2) > bridgeEndPos - (obstacleHeight / 2))
                 {
                     AudioManager.Instance.PlayEffects(AudioManager.Instance.perfect);
 
@@ -117,7 +128,7 @@ public class GameManager : MonoBehaviour
                     playing = false;
                     StartCoroutine(NewScene(1.5f));
                 }
-                else if (obstacleIndex == bridgeLength) //bridge is lower than last obstacle
+                else if (obstacleIndex == bridgeLength) //didn't get the cut
                 {
                     AudioManager.Instance.PlayEffects(AudioManager.Instance.wrongColor);
                     playing = false;
@@ -181,7 +192,9 @@ public class GameManager : MonoBehaviour
         //create last bridge part
         bridgeEnd = Instantiate(obstaclePrefab);
         bridgeEnd.GetComponent<SpriteRenderer>().color = colorTable[Random.Range(0, colorTable.Length)];
-        bridgeEnd.transform.position = new Vector2(lastObstacle.transform.position.x + (bridgeLength * obstacleWidth), firstObstacleY - heightDistanceLastFirst);
+        bridgeEnd.transform.position = new Vector2(
+            lastObstacle.transform.position.x + (bridgeLength * obstacleWidth),
+            firstObstacleY - heightDistanceLastFirst);
         targetPosition = cameraStartPos;
 
         obstacleList.Add(bridgeEnd);
