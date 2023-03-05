@@ -19,14 +19,14 @@ namespace Bridges.Scripts
         [Space(5)]
         public Color goodColor, wrongColor;
         [Space(5)]
-        public GameObject obstaclePrefab;
+        public Obstacle obstaclePrefab;
         [Space(5)]
         [Range(1, 2.9f)]
         public float minObstacleSpeed = 1;
         [Range(3, 5)]
         public int maxObstacleSpeed = 3;
         [Space(5)]
-        public List<GameObject> obstacleList = new List<GameObject>();
+        public List<Obstacle> obstacleList = new();
         [Space(5)]
         [Range(5,9)]
         public int minBridgeLength = 5;
@@ -44,7 +44,7 @@ namespace Bridges.Scripts
         float obstacleSpeed = 2f;
         public int bridgeLength, obstacleIndex;
         float obstacleWidth, obstacleHeight;
-        GameObject lastObstacle, tempObstacle, bridgeEnd;
+        Obstacle lastObstacle, tempObstacle, bridgeEnd;
         bool cameraOnStart, playing, canCreateObstacle;
         Vector2 cameraStartPos, targetPosition, tempPos;
         float obstaclePositionY;
@@ -124,7 +124,7 @@ namespace Bridges.Scripts
 
                         for (int i = 0; i < obstacleList.Count; i++)
                         {
-                            obstacleList[i].GetComponent<SpriteRenderer>().color = goodColor;
+                            obstacleList[i].SetColorSprite();
                         }
 
                         playing = false;
@@ -217,9 +217,10 @@ namespace Bridges.Scripts
             else
                 obstaclePositionY = -screenBounds.y - obstacleHeight / 2;
 
-            tempObstacle.GetComponent<SpriteRenderer>().color = colorTable[Random.Range(0, colorTable.Length)];
+            // tempObstacle.GetComponent<SpriteRenderer>().color = colorTable[Random.Range(0, colorTable.Length)];
             tempObstacle.transform.position = new Vector2(lastObstacle.transform.position.x + obstacleWidth, obstaclePositionY);
-            tempObstacle.GetComponent<Obstacle>().StartMoving(obstacleSpeed);
+            tempObstacle.Init(screenBounds);
+            tempObstacle.StartMoving(obstacleSpeed);
             obstacleIndex++;
             lastObstacle = tempObstacle;
             obstacleList.Add(lastObstacle);
@@ -270,7 +271,7 @@ namespace Bridges.Scripts
 
             GameObject[] obstacles = GameObject.FindGameObjectsWithTag("Obstacle");
 
-            foreach (GameObject item in obstacles)
+            foreach (var item in obstacles)
             {
                 Destroy(item);
             }

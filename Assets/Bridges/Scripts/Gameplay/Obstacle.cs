@@ -1,55 +1,123 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Bridges.Scripts.Gameplay
 {
     public class Obstacle : MonoBehaviour
     {
+        [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private SpriteRenderer iconRenderer;
         [SerializeField] private ObstacleConfig config;
-    
-        private float speed;
-        private bool moving;
+
+        private float _speed;
+        private bool _moving;
+        private List<EObstacleType> _types = new();
+        private List<EObstacleType> _typesLeft = new();
+        private Vector2 _screenBounds;
+        private float _height;
+        private ObstacleConfigData _config;
+
+        private void Start()
+        {
+            foreach (EObstacleType e in Enum.GetValues(typeof(EObstacleType)))
+            {
+                _types.Add(e);
+            }
+
+            _typesLeft = new(_types);
+            _height = spriteRenderer.bounds.size.y;
+            NextIcon();
+        }
+
+        public void Init(Vector2 screenBounds)
+        {
+            _screenBounds = screenBounds;
+        }
+
+        public void SetColorSprite()
+        {
+            if (_config != null)
+            {
+                iconRenderer.sprite = _config.color;
+            }
+        }
 
         public void StartMoving(float _speed)
         {
             //if obstacle is up then set speed to negative to move down
             if (transform.position.y > 1)
-                speed = -_speed;
+                this._speed = -_speed;
             else
-                speed = _speed;
+                this._speed = _speed;
 
-            moving = true;
+            _moving = true;
         }
 
         //stop block from moving
         public void StopMoving()
         {
-            moving = false;
+            _moving = false;
         }
 
         //if moving enabled move block
-        void Update()
+        private void Update()
         {
-            if (moving)
+            if (_moving)
             {
-                transform.position = transform.position + (Vector3.up * (speed * Time.deltaTime)); //move only on the y axis
+                var y = transform.position.y;
+                const float edge = 0.45f;
+                var speed = _speed * (y < -_screenBounds.y * edge || y > _screenBounds.y * edge
+                    ? 4f
+                    : 1f);
+                
+                transform.position += (Vector3.up * (speed * Time.deltaTime)); //move only on the y axis
+                
+                if (_speed < 0 && transform.position.y < -_screenBounds.y + _height / 2)
+                {
+                    _speed = -1 * _speed;
+                    NextIcon();
+                }
+                if (_speed > 0 && transform.position.y > _screenBounds.y - _height / 2)
+                {
+                    _speed = -1 * _speed;
+                    NextIcon();
+                }
             }
         }
 
         //if block is passed the screen than trigger game over
-        void OnBecameInvisible()
+        private void OnBecameInvisible()
         {
-            if (moving)
+            if (_moving)
             {
-                if (speed < 0 && transform.position.y < 0)
+                // if(_speed)
+                if (_speed < 0 && transform.position.y < 0)
                     GameOver();
-                else if (speed > 0 && transform.position.y > 0)
+                else if (_speed > 0 && transform.position.y > 0)
                     GameOver();
             }
         }
 
+        private void NextIcon()
+        {
+            if (_typesLeft.Count == 0)
+            {
+                _typesLeft.AddRange(_types);
+            }
+
+            var icon = _typesLeft[Random.Range(0, _typesLeft.Count - 1)];
+            _typesLeft.Remove(icon);
+            _config = config.GetFor(icon);
+            if (_config != null)
+            {
+                iconRenderer.sprite = _config.line;
+            }
+        }
+
         //game over call
-        void GameOver()
+        private void GameOver()
         {
             GameManager.Instance.GameOver();
             Destroy(gameObject);
