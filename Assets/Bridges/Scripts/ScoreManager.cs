@@ -1,68 +1,71 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class ScoreManager : MonoBehaviour
+namespace Bridges.Scripts
 {
-    public static ScoreManager Instance { get; set; }
-    public Text currentScoreLabel, highScoreLabel, currentScoreGameOverLabel, highScoreGameOverLabel;
-
-    public int currentScore, highScore;
-    // Start is called before the first frame update
-
-    bool counting;
-
-    void Awake()
+    public class ScoreManager : MonoBehaviour
     {
-        DontDestroyOnLoad(this);
+        public static ScoreManager Instance { get; set; }
+        public Text currentScoreLabel, highScoreLabel, currentScoreGameOverLabel, highScoreGameOverLabel;
 
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
-    }
+        public int currentScore, highScore;
+        // Start is called before the first frame update
 
-    //init and load highscore
-    void Start()
-    {
-        if (!PlayerPrefs.HasKey("HighScore"))
-            PlayerPrefs.SetInt("HighScore", 0);
+        bool counting;
 
-        highScore = PlayerPrefs.GetInt("HighScore");
+        void Awake()
+        {
+            DontDestroyOnLoad(this);
 
-        UpdateHighScore();
-        ResetCurrentScore();
-    }
+            if (Instance == null)
+                Instance = this;
+            else
+                Destroy(gameObject);
+        }
 
-    //save and update highscore
-    void UpdateHighScore()
-    {
-        if (currentScore > highScore)
-            highScore = currentScore;
+        //init and load highscore
+        void Start()
+        {
+            if (!PlayerPrefs.HasKey("HighScore"))
+                PlayerPrefs.SetInt("HighScore", 0);
 
-        highScoreLabel.text = highScore.ToString();
-        PlayerPrefs.SetInt("HighScore", highScore);
-    }
+            highScore = PlayerPrefs.GetInt("HighScore");
 
-    //update currentscore
-    public void UpdateScore(int value)
-    {
-        currentScore += value;
-        currentScoreLabel.text = currentScore.ToString();
-    }
+            UpdateHighScore();
+            ResetCurrentScore();
+        }
 
-    //reset current score
-    public void ResetCurrentScore()
-    {
-        currentScore = 0;
-        UpdateScore(0);
-    }
+        //save and update highscore
+        void UpdateHighScore()
+        {
+            if (currentScore > highScore)
+                highScore = currentScore;
 
-    //update gameover scores
-    public void UpdateScoreGameover()
-    {
-        UpdateHighScore();
+            highScoreLabel.text = highScore.ToString();
+            PlayerPrefs.SetInt("HighScore", highScore);
+        }
 
-        currentScoreGameOverLabel.text = currentScore.ToString();
-        highScoreGameOverLabel.text = highScore.ToString();
+        //update currentscore
+        public void UpdateScore(int value)
+        {
+            currentScore += value;
+            currentScoreLabel.text = currentScore.ToString();
+        }
+
+        //reset current score
+        public void ResetCurrentScore()
+        {
+            currentScore = 0;
+            UpdateScore(0);
+        }
+
+        //update gameover scores
+        public void UpdateScoreGameover()
+        {
+            UpdateHighScore();
+
+            currentScoreGameOverLabel.text = currentScore.ToString();
+            highScoreGameOverLabel.text = highScore.ToString();
+        }
     }
 }

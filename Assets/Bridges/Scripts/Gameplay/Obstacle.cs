@@ -1,52 +1,58 @@
 ﻿using UnityEngine;
 
-public class Obstacle : MonoBehaviour
+namespace Bridges.Scripts.Gameplay
 {
-    float speed;
-    bool moving;
-
-    public void StartMoving(float _speed)
+    public class Obstacle : MonoBehaviour
     {
-        //if obstacle is up then set speed to negative to move down
-        if (transform.position.y > 1)
-            speed = -_speed;
-        else
-            speed = _speed;
+        [SerializeField] private SpriteRenderer iconRenderer;
+        [SerializeField] private ObstacleConfig config;
+    
+        private float speed;
+        private bool moving;
 
-        moving = true;
-    }
-
-    //stop block from moving
-    public void StopMoving()
-    {
-        moving = false;
-    }
-
-    //if moving enabled move block
-    void Update()
-    {
-        if (moving)
+        public void StartMoving(float _speed)
         {
-            transform.position = transform.position + (Vector3.up * (speed * Time.deltaTime)); //move only on the y axis
-        }
-    }
+            //if obstacle is up then set speed to negative to move down
+            if (transform.position.y > 1)
+                speed = -_speed;
+            else
+                speed = _speed;
 
-    //if block is passed the screen than trigger game over
-    void OnBecameInvisible()
-    {
-        if (moving)
+            moving = true;
+        }
+
+        //stop block from moving
+        public void StopMoving()
         {
-            if (speed < 0 && transform.position.y < 0)
-                GameOver();
-            else if (speed > 0 && transform.position.y > 0)
-                GameOver();
+            moving = false;
         }
-    }
 
-    //game over call
-    void GameOver()
-    {
-        GameManager.Instance.GameOver();
-        Destroy(gameObject);
+        //if moving enabled move block
+        void Update()
+        {
+            if (moving)
+            {
+                transform.position = transform.position + (Vector3.up * (speed * Time.deltaTime)); //move only on the y axis
+            }
+        }
+
+        //if block is passed the screen than trigger game over
+        void OnBecameInvisible()
+        {
+            if (moving)
+            {
+                if (speed < 0 && transform.position.y < 0)
+                    GameOver();
+                else if (speed > 0 && transform.position.y > 0)
+                    GameOver();
+            }
+        }
+
+        //game over call
+        void GameOver()
+        {
+            GameManager.Instance.GameOver();
+            Destroy(gameObject);
+        }
     }
 }
