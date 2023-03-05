@@ -16,6 +16,7 @@ namespace Bridges.Scripts.Gameplay
         private List<EObstacleType> _types = new();
         private List<EObstacleType> _typesLeft = new();
         private Vector2 _screenBounds;
+        private float _edgePercent;
         private float _height;
         private ObstacleConfigData _config;
 
@@ -31,9 +32,10 @@ namespace Bridges.Scripts.Gameplay
             NextIcon();
         }
 
-        public void Init(Vector2 screenBounds)
+        public void Init(Vector2 screenBounds, float edgePercent)
         {
             _screenBounds = screenBounds;
+            _edgePercent = edgePercent;
         }
 
         public void SetColorSprite()
@@ -44,13 +46,13 @@ namespace Bridges.Scripts.Gameplay
             }
         }
 
-        public void StartMoving(float _speed)
+        public void StartMoving(float speed)
         {
             //if obstacle is up then set speed to negative to move down
             if (transform.position.y > 1)
-                this._speed = -_speed;
+                _speed = -speed;
             else
-                this._speed = _speed;
+                _speed = speed;
 
             _moving = true;
         }
@@ -67,8 +69,7 @@ namespace Bridges.Scripts.Gameplay
             if (_moving)
             {
                 var y = transform.position.y;
-                const float edge = 0.45f;
-                var speed = _speed * (y < -_screenBounds.y * edge || y > _screenBounds.y * edge
+                var speed = _speed * (y < -_screenBounds.y * _edgePercent || y > _screenBounds.y * _edgePercent
                     ? 4f
                     : 1f);
                 

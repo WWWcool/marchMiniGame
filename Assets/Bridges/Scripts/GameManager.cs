@@ -35,7 +35,10 @@ namespace Bridges.Scripts
         [Space(5)]
         public float firstObstacleY = 1; //y position of first obstacle
         [Space(5)]
-        public float heightDistanceLastFirst = 1; //difference in y position between first and last obstacle
+        [Range(0f, 1f)]
+        public float playZoneEdgePercent = 0.45f;
+        // [Space(5)]
+        // public float heightDistanceLastFirst = 1; //difference in y position between first and last obstacle
 
         [Space(25)]
         Vector2 screenBounds;
@@ -187,7 +190,10 @@ namespace Bridges.Scripts
             obstacleHeight = lastObstacle.GetComponent<SpriteRenderer>().bounds.size.y; //calculate obstacle height
 
             lastObstacle.GetComponent<SpriteRenderer>().color = colorTable[Random.Range(0, colorTable.Length)];
-            lastObstacle.transform.position = new Vector2(-screenBounds.x + obstacleWidth /2, firstObstacleY);
+            lastObstacle.transform.position = new Vector2(
+                -screenBounds.x + obstacleWidth /2,
+                RandomObstacleY()
+                );
 
             obstacleIndex++;
 
@@ -196,7 +202,8 @@ namespace Bridges.Scripts
             bridgeEnd.GetComponent<SpriteRenderer>().color = colorTable[Random.Range(0, colorTable.Length)];
             bridgeEnd.transform.position = new Vector2(
                 lastObstacle.transform.position.x + (bridgeLength * obstacleWidth),
-                firstObstacleY - heightDistanceLastFirst);
+                RandomObstacleY()
+                );
             targetPosition = cameraStartPos;
 
             obstacleList.Add(bridgeEnd);
@@ -219,7 +226,7 @@ namespace Bridges.Scripts
 
             // tempObstacle.GetComponent<SpriteRenderer>().color = colorTable[Random.Range(0, colorTable.Length)];
             tempObstacle.transform.position = new Vector2(lastObstacle.transform.position.x + obstacleWidth, obstaclePositionY);
-            tempObstacle.Init(screenBounds);
+            tempObstacle.Init(screenBounds, playZoneEdgePercent);
             tempObstacle.StartMoving(obstacleSpeed);
             obstacleIndex++;
             lastObstacle = tempObstacle;
@@ -308,6 +315,13 @@ namespace Bridges.Scripts
 
                 scoreManager.UpdateScoreGameover();
             }
+        }
+
+        private float RandomObstacleY()
+        {
+            return Random.Range(
+                (-screenBounds.y - obstacleHeight / 2) * playZoneEdgePercent,
+                (screenBounds.y + obstacleHeight / 2) * playZoneEdgePercent);
         }
     }
 }
