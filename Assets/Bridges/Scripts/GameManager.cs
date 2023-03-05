@@ -230,6 +230,11 @@ namespace Bridges.Scripts
         IEnumerator NewScene(float delay)
         {
             yield return new WaitForSeconds(delay);
+            NewScene();
+        }
+
+        public void NewScene()
+        {
             ClearScene();
             CreateScene();
             cameraOnStart = false;
@@ -244,10 +249,13 @@ namespace Bridges.Scripts
             yield return new WaitForSeconds(bridgeLength / 5);
             targetPosition = cameraStartPos;
             yield return new WaitForSeconds(bridgeLength / 5);
-            playing = true;
-            SpawnObstacle();
-            canCreateObstacle = true;
-            playing = true;
+            if (uIManager.gameState == GameState.PLAYING)
+            {
+                playing = true;
+                SpawnObstacle();
+                canCreateObstacle = true;
+                playing = true;
+            }
         }
 
         //restart game, reset score,...

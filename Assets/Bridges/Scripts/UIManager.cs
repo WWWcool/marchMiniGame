@@ -52,8 +52,7 @@ namespace Bridges.Scripts
 
             gameState = GameState.MENU;
             AudioManager.Instance.PlayEffects(AudioManager.Instance.buttonClick);
-            GameManager.Instance.ClearScene();
-            GameManager.Instance.CreateScene();
+            GameManager.Instance.NewScene();
         }
 
         //show pause menu
