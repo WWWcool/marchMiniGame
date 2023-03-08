@@ -11,6 +11,8 @@ namespace Bridges.Scripts.Gameplay
         [SerializeField] private SpriteRenderer iconRenderer;
         [SerializeField] private ObstacleConfig config;
 
+        public EObstacleType Type => _config.type;
+        
         private float _speed;
         private bool _moving;
         private List<EObstacleType> _types = new();

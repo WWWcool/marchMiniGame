@@ -4,6 +4,8 @@
         MENU,
         PLAYING,
         PAUSED,
-        GAMEOVER
+        GAMEOVER,
+        ACHIEVEMENT,
+        ACHIEVEMENT_POPUP
     }
 }

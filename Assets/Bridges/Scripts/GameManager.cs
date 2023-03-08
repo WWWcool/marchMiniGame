@@ -12,6 +12,7 @@ namespace Bridges.Scripts
         public GameObject camObject;
         public UIManager uIManager;
         public ScoreManager scoreManager;
+        public AchievementManager achievementManager;
 
         [Header("Game settings")]
         [Space(5)]
@@ -237,6 +238,13 @@ namespace Bridges.Scripts
         IEnumerator NewScene(float delay)
         {
             yield return new WaitForSeconds(delay);
+            var context = CollectContext();
+            var achievements = achievementManager.GetAchieved(context);
+            uIManager.SetAchievements(achievements);
+            while (uIManager.gameState != GameState.PLAYING || achievements.Count != 0)
+            {
+                yield return null;
+            }
             NewScene();
         }
 
@@ -323,5 +331,46 @@ namespace Bridges.Scripts
                 (-screenBounds.y - obstacleHeight / 2) * playZoneEdgePercent,
                 (screenBounds.y + obstacleHeight / 2) * playZoneEdgePercent);
         }
+
+        private AchievementsContext CollectContext()
+        {
+            var context = new AchievementsContext();
+            var obstacleLine = new List<Obstacle>();
+            
+            for (int i = 0; i < obstacleList.Count; i++)
+            {
+                var obstacle = obstacleList[i];
+                
+                // check lines
+                if (obstacleLine.Count == 0)
+                {
+                    obstacleLine.Add(obstacle);
+                }
+                else
+                {
+                    if (obstacle.Type == obstacleLine[0].Type)
+                    {
+                        obstacleLine.Add(obstacle);
+                    }
+                    else
+                    {
+                        if (obstacleLine.Count > 2)
+                        {
+                            var achievement = new AchievementContext
+                            {
+                                count = 3,
+                                type = EAchievementType.Line,
+                                obstacleType = obstacleLine[0].Type
+                            };
+                            context.data.Add(achievement);
+                        }
+                        obstacleLine.Clear();
+                        obstacleLine.Add(obstacle);
+                    }
+                }
+            }
+
+            return context;
+        } 
     }
 }

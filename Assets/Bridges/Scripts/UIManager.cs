@@ -1,19 +1,27 @@
 ﻿using System.Collections.Generic;
+using Bridges.Scripts.Gameplay;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Bridges.Scripts
 {
-    public class UIManager : MonoBehaviour {
+    public class UIManager : MonoBehaviour
+    {
 
+        [SerializeField] private AchievementManager achievementManager;
+        [SerializeField] private AchievementConfig achievementConfig;
         [Header("GUI Components")]
         public GameObject mainMenuGui;
         public GameObject pauseGui, gameplayGui, gameOverGui;
+        public GameObject achievementGui;
+        public AchievementPopup achievementPopup;
 
         public GameState gameState;
 
-        bool clicked;
+        private bool _clicked;
+        private GameState _previousState;
+        private List<string> _achievements = new();
 
         // Use this for initialization
         void Start () {
@@ -21,12 +29,14 @@ namespace Bridges.Scripts
             pauseGui.SetActive(false);
             gameplayGui.SetActive(false);
             gameOverGui.SetActive(false);
+            achievementGui.SetActive(false);
+            achievementPopup.gameObject.SetActive(false);
             gameState = GameState.MENU;
         }
 
         void Update()
         {
-            if (Input.GetMouseButtonDown(0) && gameState == GameState.MENU && !clicked)
+            if (Input.GetMouseButtonDown(0) && gameState == GameState.MENU && !_clicked)
             {
                 if (IsButton())
                     return;
@@ -34,19 +44,21 @@ namespace Bridges.Scripts
                 AudioManager.Instance.PlayEffects(AudioManager.Instance.buttonClick);
                 ShowGameplay();
             }
-            else if (Input.GetMouseButtonUp(0) && clicked && gameState == GameState.MENU)
-                clicked = false;
+            else if (Input.GetMouseButtonUp(0) && _clicked && gameState == GameState.MENU)
+                _clicked = false;
         }
 
         //show main menu
         public void ShowMainMenu()
         {
             ScoreManager.Instance.ResetCurrentScore();
-            clicked = true;
+            _clicked = true;
             mainMenuGui.SetActive(true);
             pauseGui.SetActive(false);
             gameplayGui.SetActive(false);
             gameOverGui.SetActive(false);
+            achievementGui.SetActive(false);
+            achievementPopup.gameObject.SetActive(false);
             if (gameState == GameState.PAUSED)
                 Time.timeScale = 1;
 
@@ -74,6 +86,73 @@ namespace Bridges.Scripts
             Time.timeScale = 1;
             gameState = GameState.PLAYING;
             AudioManager.Instance.PlayEffects(AudioManager.Instance.buttonClick);
+        }
+        
+        //show achievement menu
+        public void ShowAchievementMenu()
+        {
+            if (gameState == GameState.ACHIEVEMENT)
+                return;
+
+            achievementGui.SetActive(true);
+            Time.timeScale = 0;
+            _previousState = gameState;
+            gameState = GameState.ACHIEVEMENT;
+            AudioManager.Instance.PlayEffects(AudioManager.Instance.buttonClick);
+        }
+
+        //hide achievement menu
+        public void HideAchievementMenu()
+        {
+            achievementGui.SetActive(false);
+            Time.timeScale = 1;
+            gameState = _previousState;
+            AudioManager.Instance.PlayEffects(AudioManager.Instance.buttonClick);
+        }
+
+        public void SetAchievements(List<string> achievements)
+        {
+            _achievements = achievements;
+            if(_achievements.Count > 0)
+            {
+                var achievement = _achievements[0];
+                ShowAchievementPopup(achievement);
+                _achievements.Remove(achievement);
+            }
+        }
+        
+        //show achievement popup
+        public void ShowAchievementPopup(string achievement)
+        {
+            if (gameState == GameState.ACHIEVEMENT_POPUP)
+                return;
+
+            var config = achievementConfig.GetFor(achievement);
+            if(config == null)
+                return;
+            achievementManager.Achieve(config);
+
+            achievementPopup.Init(config.title, config.rewardText);
+            achievementPopup.gameObject.SetActive(true);
+            Time.timeScale = 0;
+            _previousState = gameState;
+            gameState = GameState.ACHIEVEMENT_POPUP;
+            // AudioManager.Instance.PlayEffects(AudioManager.Instance.buttonClick);
+        }
+
+        //hide achievement popup
+        public void HideAchievementPopup()
+        {
+            achievementPopup.gameObject.SetActive(false);
+            Time.timeScale = 1;
+            gameState = _previousState;
+            if (_achievements.Count > 0)
+            {
+                var achievement = _achievements[0];
+                ShowAchievementPopup(achievement);
+                _achievements.Remove(achievement);
+            }
+            // AudioManager.Instance.PlayEffects(AudioManager.Instance.buttonClick);
         }
 
         //show gameplay gui
