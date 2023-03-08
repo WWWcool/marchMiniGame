@@ -328,8 +328,8 @@ namespace Bridges.Scripts
         private float RandomObstacleY()
         {
             return Random.Range(
-                (-screenBounds.y - obstacleHeight / 2) * playZoneEdgePercent,
-                (screenBounds.y + obstacleHeight / 2) * playZoneEdgePercent);
+                (-screenBounds.y - obstacleHeight / 2) * playZoneEdgePercent / 1.3f,
+                (screenBounds.y + obstacleHeight / 2) * playZoneEdgePercent / 1.3f);
         }
 
         private AchievementsContext CollectContext()
@@ -351,19 +351,19 @@ namespace Bridges.Scripts
                     if (obstacle.Type == obstacleLine[0].Type)
                     {
                         obstacleLine.Add(obstacle);
-                    }
-                    else
-                    {
                         if (obstacleLine.Count > 2)
                         {
                             var achievement = new AchievementContext
                             {
-                                count = 3,
+                                count = obstacleLine.Count,
                                 type = EAchievementType.Line,
                                 obstacleType = obstacleLine[0].Type
                             };
                             context.data.Add(achievement);
                         }
+                    }
+                    else
+                    {
                         obstacleLine.Clear();
                         obstacleLine.Add(obstacle);
                     }

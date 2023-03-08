@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 namespace Bridges.Scripts.Gameplay
@@ -73,7 +73,10 @@ namespace Bridges.Scripts.Gameplay
                 {
                     if (configData.type == contextData.type && configData.obstacleType == contextData.obstacleType && configData.count <= contextData.count)
                     {
-                        list.Add(configData.id);
+                        if(!list.Contains(configData.id))
+                        {
+                            list.Add(configData.id);
+                        }
                     }
                 }
             }
@@ -112,6 +115,14 @@ namespace Bridges.Scripts.Gameplay
         private bool Got(string id)
         {
             return _data.data.Find(d => d.id == id) != null;
+        }
+        
+#if UNITY_EDITOR
+        [MenuItem("Tools/Reset save data")]
+#endif
+        public static void ResetSaveData()
+        {
+            PlayerPrefs.DeleteAll();
         }
     }
 }
