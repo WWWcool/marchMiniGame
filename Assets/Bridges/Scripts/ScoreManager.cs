@@ -36,7 +36,7 @@ namespace Bridges.Scripts
         }
 
         //save and update highscore
-        void UpdateHighScore()
+        public void UpdateHighScore()
         {
             if (currentScore > highScore)
                 highScore = currentScore;

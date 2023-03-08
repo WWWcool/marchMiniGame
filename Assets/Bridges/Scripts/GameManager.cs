@@ -53,6 +53,9 @@ namespace Bridges.Scripts
         Vector2 cameraStartPos, targetPosition, tempPos;
         float obstaclePositionY;
 
+        private int roundCount = 0;
+        private int perfectCount = 0;
+
         void Awake()
         {
             DontDestroyOnLoad(this);
@@ -95,12 +98,13 @@ namespace Bridges.Scripts
                     var bridgeEndPos = bridgeEnd.transform.position.y;
 
                     //perfect stop (player can stop little higher or lower -> 5% of block high)
-                    if (obstaclePos - (.05f * obstacleHeight) < previousObstaclePos &&
-                        obstaclePos + (.05f * obstacleHeight) > previousObstaclePos)
+                    if (obstaclePos - (.1f * obstacleHeight) < previousObstaclePos &&
+                        obstaclePos + (.1f * obstacleHeight) > previousObstaclePos)
                     {
                         lastObstacle.transform.position = new Vector2(lastObstacle.transform.position.x, obstacleList[obstacleIndex - 1].transform.position.y);
                         AudioManager.Instance.PlayEffects(AudioManager.Instance.perfect);
                         ScoreManager.Instance.UpdateScore(2);
+                        perfectCount++;
                     }
                     //Check if lowest point of current obstacle is higher than highest point of previous obstacle
                     //or if highest point of current obstacle is lower than lowest point of previous obstacle
@@ -182,6 +186,7 @@ namespace Bridges.Scripts
         {
             cameraOnStart = false;
             obstacleIndex = 0;
+            perfectCount = 0;
             bridgeLength = Random.Range(minBridgeLength, maxBridgeLength + 1);
 
             //create first bridge part
@@ -238,6 +243,8 @@ namespace Bridges.Scripts
         IEnumerator NewScene(float delay)
         {
             yield return new WaitForSeconds(delay);
+            roundCount++;
+            ScoreManager.Instance.UpdateHighScore();
             var context = CollectContext();
             var achievements = achievementManager.GetAchieved(context);
             uIManager.SetAchievements(achievements);
@@ -285,6 +292,7 @@ namespace Bridges.Scripts
             scoreManager.ResetCurrentScore();
             cameraOnStart = true;
             playing = false;
+            roundCount = 0;
             StartCoroutine(ShowStartEnd());
         }
 
@@ -369,6 +377,30 @@ namespace Bridges.Scripts
                     }
                 }
             }
+            
+            var scoreAchievement = new AchievementContext
+            {
+                count = ScoreManager.Instance.currentScore,
+                type = EAchievementType.Score
+            };
+            
+            context.data.Add(scoreAchievement);
+            
+            var roundAchievement = new AchievementContext
+            {
+                count = roundCount,
+                type = EAchievementType.Round
+            };
+            
+            context.data.Add(roundAchievement);
+            
+            var perfectAchievement = new AchievementContext
+            {
+                count = perfectCount,
+                type = EAchievementType.Perfect
+            };
+            
+            context.data.Add(perfectAchievement);
 
             return context;
         } 

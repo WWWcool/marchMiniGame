@@ -21,7 +21,7 @@ namespace Bridges.Scripts.Gameplay
     public class AchievementContext
     {
         public EAchievementType type;
-        public EObstacleType obstacleType;
+        public EObstacleType obstacleType = EObstacleType.None;
         public int count;
     }
     
